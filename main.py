@@ -2,71 +2,194 @@ import streamlit as st
 
 st.set_page_config(page_title="ARBURG Zone Diagram Generator", layout="wide")
 
-st.title("🔌 ARBURG Zone Diagram Generator")
-st.markdown("Configure heating zones and export as SVG.")
+# ─── Language packages ────────────────────────────────────────────────────────
+LANG = {
+    "SL": {
+        "app_title":      "🔌 Generator sheme con ARBURG",
+        "app_sub":        "Konfigurirajte grelne cone in izvozite SVG.",
+        "general":        "⚙️ Splošne nastavitve",
+        "diag_title":     "Naziv diagrama",
+        "num_zones":      "Število con",
+        "zone_width":     "Širina cone (px)",
+        "svg_height":     "Višina diagrama (px)",
+        "symbol":         "📐 Nastavitve simbolov",
+        "show_pol":       "Prikaži oznake +/−",
+        "show_zlbl":      "Prikaži oznake con",
+        "dividers":       "Notranje črte grelca",
+        "style":          "🎨 Slog",
+        "stroke_col":     "Barva linij",
+        "bg_col":         "Barva ozadja",
+        "inact_col":      "Barva križa (neaktivno)",
+        "font_sz":        "Velikost pisave terminalov",
+        "num_scheme":     "Shema številčenja terminalov",
+        "seq_label":      "Zaporedno (1-2, 3-4 … grelec; 13-14 … TC)",
+        "custom_label":   "Po meri (ročni vnos)",
+        "per_zone":       "Konfiguracija po conah",
+        "zone_hdr":       "Cona",
+        "active_lbl":     "Aktivna",
+        "wattage_lbl":    "Moč",
+        "wattage_def":    "350 W",
+        "zone_type_lbl":  "Tip cone",
+        "type_nozzle":    "VSTOPNA ŠOBA",
+        "type_block":     "GRELNI BLOK",
+        "type_heater":    "GRELEC",
+        "warn_nozzle":    "⚠️ VSTOPNA ŠOBA je že dodeljena coni {z}. Samo ena je dovoljena.",
+        "warn_block":     "⚠️ GRELNI BLOK je že dodeljen coni {z}. Samo eden je dovoljen.",
+        "h_plus":         "G+",
+        "h_minus":        "G−",
+        "tc_plus":        "TC+",
+        "tc_minus":       "TC−",
+        "preview":        "Predogled",
+        "download":       "⬇️  Prenesi SVG",
+        "tip":            "Nasvet: odprite SVG v Inkscape ali brskalniku za nadaljnje urejanje.",
+    },
+    "EN": {
+        "app_title":      "🔌 ARBURG Zone Diagram Generator",
+        "app_sub":        "Configure heating zones and export as SVG.",
+        "general":        "⚙️ General Settings",
+        "diag_title":     "Diagram title",
+        "num_zones":      "Number of zones",
+        "zone_width":     "Zone width (px)",
+        "svg_height":     "Diagram height (px)",
+        "symbol":         "📐 Symbol Settings",
+        "show_pol":       "Show +/− polarity labels",
+        "show_zlbl":      "Show zone labels",
+        "dividers":       "Heater internal dividers",
+        "style":          "🎨 Style",
+        "stroke_col":     "Line / stroke color",
+        "bg_col":         "Background color",
+        "inact_col":      "Inactive cross color",
+        "font_sz":        "Terminal number font size",
+        "num_scheme":     "Terminal numbering scheme",
+        "seq_label":      "Sequential pairs (1-2, 3-4 … heater; 13-14 … TC)",
+        "custom_label":   "Custom (enter manually)",
+        "per_zone":       "Per-zone configuration",
+        "zone_hdr":       "Zone",
+        "active_lbl":     "Active",
+        "wattage_lbl":    "Wattage",
+        "wattage_def":    "350 W",
+        "zone_type_lbl":  "Zone type",
+        "type_nozzle":    "NOZZLE",
+        "type_block":     "HEATING BLOCK",
+        "type_heater":    "HEATER",
+        "warn_nozzle":    "⚠️ NOZZLE already assigned to zone {z}. Only one allowed.",
+        "warn_block":     "⚠️ HEATING BLOCK already assigned to zone {z}. Only one allowed.",
+        "h_plus":         "H+",
+        "h_minus":        "H−",
+        "tc_plus":        "TC+",
+        "tc_minus":       "TC−",
+        "preview":        "Preview",
+        "download":       "⬇️  Download SVG",
+        "tip":            "Tip: open the downloaded SVG in Inkscape or a browser for further editing.",
+    },
+}
+
+# ─── Language selector (top of sidebar, before anything else) ─────────────────
+with st.sidebar:
+    lang_choice = st.selectbox("🌐 Jezik / Language", ["SL", "EN"], index=0)
+
+T = LANG[lang_choice]
+
+st.title(T["app_title"])
+st.markdown(T["app_sub"])
 
 # ─── Sidebar config ───────────────────────────────────────────────────────────
 with st.sidebar:
-    st.header("⚙️ General Settings")
-    title_text    = st.text_input("Diagram title", value="ARBURG")
-    num_zones     = st.slider("Number of zones", 1, 12, 6)
-    zone_width    = st.slider("Zone width (px)", 180, 320, 256)
-    svg_height    = st.slider("Diagram height (px)", 400, 800, 580)
+    st.header(T["general"])
+    title_text      = st.text_input(T["diag_title"], value="ARBURG")
+    num_zones       = st.slider(T["num_zones"], 1, 12, 6)
+    zone_width      = st.slider(T["zone_width"], 180, 320, 256)
+    svg_height      = st.slider(T["svg_height"], 400, 800, 580)
 
     st.markdown("---")
-    st.header("📐 Symbol Settings")
-    show_polarity   = st.checkbox("Show +/− polarity labels", value=True)
-    show_zone_lbl   = st.checkbox("Show zone labels", value=True)
-    heater_dividers = st.slider("Heater internal dividers", 0, 5, 3)
+    st.header(T["symbol"])
+    show_polarity   = st.checkbox(T["show_pol"], value=True)
+    show_zone_lbl   = st.checkbox(T["show_zlbl"], value=True)
+    heater_dividers = st.slider(T["dividers"], 0, 5, 3)
 
     st.markdown("---")
-    st.header("🎨 Style")
-    stroke_color   = st.color_picker("Line / stroke color",  value="#444444")
-    bg_color       = st.color_picker("Background color",     value="#ffffff")
-    inactive_color = st.color_picker("Inactive cross color", value="#cc0000")
-    font_size_num  = st.slider("Terminal number font size", 14, 36, 24)
+    st.header(T["style"])
+    stroke_color    = st.color_picker(T["stroke_col"],  value="#444444")
+    bg_color        = st.color_picker(T["bg_col"],      value="#ffffff")
+    inactive_color  = st.color_picker(T["inact_col"],   value="#cc0000")
+    font_size_num   = st.slider(T["font_sz"], 14, 36, 24)
 
 # ─── Terminal numbering scheme ────────────────────────────────────────────────
-st.subheader("Terminal numbering scheme")
+st.subheader(T["num_scheme"])
 num_scheme = st.radio(
-    "Auto-numbering pattern",
-    ["Sequential pairs  (1-2, 3-4 … heater;  13-14 … TC)",
-     "Custom (enter manually)"],
-    horizontal=True
+    "",
+    [T["seq_label"], T["custom_label"]],
+    horizontal=True,
+    label_visibility="collapsed"
 )
 
-# ─── Per-zone configuration ───────────────────────────────────────────────────
-st.subheader("Per-zone configuration")
+# ─── Zone type options ────────────────────────────────────────────────────────
+ZONE_TYPES = [T["type_nozzle"], T["type_block"], T["type_heater"]]
 
-zone_configs = []   # (t1, t2, t3, t4, zone_num, active, wattage_str)
+# ─── Per-zone configuration ───────────────────────────────────────────────────
+st.subheader(T["per_zone"])
+
+zone_configs = []  # (t1, t2, t3, t4, label, active, wattage)
 
 cols_per_row = min(num_zones, 6)
 rows_needed  = (num_zones + cols_per_row - 1) // cols_per_row
 col_sets     = [st.columns(cols_per_row) for _ in range(rows_needed)]
 
+nozzle_assigned_to = None   # zone index (1-based) where nozzle is used
+block_assigned_to  = None   # zone index (1-based) where block is used
+heater_counter     = 0      # running count of GRELEC/HEATER zones
+
 for z in range(num_zones):
     row   = z // cols_per_row
     col_i = z % cols_per_row
     with col_sets[row][col_i]:
-        st.markdown(f"**Zone {z+1}**")
+        st.markdown(f"**{T['zone_hdr']} {z+1}**")
 
-        active  = st.checkbox("Active", value=True, key=f"act{z}")
+        zone_type = st.selectbox(
+            T["zone_type_lbl"],
+            ZONE_TYPES,
+            index=min(2, len(ZONE_TYPES)-1),   # default: GRELEC/HEATER
+            key=f"ztype{z}"
+        )
+
+        # Uniqueness warnings
+        if zone_type == T["type_nozzle"]:
+            if nozzle_assigned_to is not None:
+                st.warning(T["warn_nozzle"].format(z=nozzle_assigned_to))
+            else:
+                nozzle_assigned_to = z + 1
+        elif zone_type == T["type_block"]:
+            if block_assigned_to is not None:
+                st.warning(T["warn_block"].format(z=block_assigned_to))
+            else:
+                block_assigned_to = z + 1
+
+        # Build SVG label
+        if zone_type == T["type_nozzle"]:
+            svg_label = T["type_nozzle"]
+        elif zone_type == T["type_block"]:
+            svg_label = T["type_block"]
+        else:
+            heater_counter += 1
+            svg_label = f"{T['type_heater']} {heater_counter}"
+
+        active  = st.checkbox(T["active_lbl"], value=True, key=f"act{z}")
         wattage = ""
         if active:
-            wattage = st.text_input("Wattage", value="350 W", key=f"wat{z}")
+            wattage = st.text_input(T["wattage_lbl"], value=T["wattage_def"], key=f"wat{z}")
 
-        if num_scheme.startswith("Custom"):
-            h_top = st.number_input("H+",  value=z*2+1,             key=f"ht{z}", step=1)
-            h_bot = st.number_input("H−",  value=z*2+2,             key=f"hb{z}", step=1)
-            t_top = st.number_input("TC+", value=z*2+1+num_zones*2, key=f"tt{z}", step=1)
-            t_bot = st.number_input("TC−", value=z*2+2+num_zones*2, key=f"tb{z}", step=1)
+        if num_scheme == T["custom_label"]:
+            h_top = st.number_input(T["h_plus"],  value=z*2+1,             key=f"ht{z}", step=1)
+            h_bot = st.number_input(T["h_minus"], value=z*2+2,             key=f"hb{z}", step=1)
+            t_top = st.number_input(T["tc_plus"], value=z*2+1+num_zones*2, key=f"tt{z}", step=1)
+            t_bot = st.number_input(T["tc_minus"],value=z*2+2+num_zones*2, key=f"tb{z}", step=1)
             zone_configs.append((int(h_top), int(h_bot), int(t_top), int(t_bot),
-                                  z+1, active, wattage))
+                                  svg_label, active, wattage))
         else:
             zone_configs.append((
-                z*2 + 1,          z*2 + 2,
+                z*2 + 1,               z*2 + 2,
                 z*2 + 1 + num_zones*2, z*2 + 2 + num_zones*2,
-                z+1, active, wattage
+                svg_label, active, wattage
             ))
 
 # ─── SVG generation ───────────────────────────────────────────────────────────
@@ -74,8 +197,7 @@ def generate_svg(zones, title, zone_w, svg_h,
                  stroke, bg, inactive_col, font_num,
                  show_pol, show_zlbl, dividers):
 
-    num_z = len(zones)
-    svg_w = zone_w * num_z + 4
+    svg_w = zone_w * len(zones) + 4
 
     H_CX  = zone_w * 30 // 100
     T_CX  = zone_w * 70 // 100
@@ -97,6 +219,9 @@ def generate_svg(zones, title, zone_w, svg_h,
     CROSS_TOP   = int(svg_h * 0.10)
     CROSS_BOT   = int(svg_h * 0.90)
 
+    # Font size for zone label — shrink for long strings
+    zlbl_fs = int(svg_h * 0.029)
+
     L = []
     L.append(f'<svg xmlns="http://www.w3.org/2000/svg" '
              f'viewBox="0 0 {svg_w} {svg_h}" '
@@ -109,9 +234,9 @@ def generate_svg(zones, title, zone_w, svg_h,
             text-anchor:middle; dominant-baseline:central; }}
   .title {{ font-family:Arial,sans-serif; font-size:{int(svg_h*0.076)}px; fill:{stroke};
              text-anchor:middle; dominant-baseline:central; letter-spacing:10px; font-weight:300; }}
-  .zlbl {{ font-family:Arial,sans-serif; font-size:{int(svg_h*0.029)}px; fill:{stroke};
-            text-anchor:middle; letter-spacing:2px; }}
-  .pwrl {{ font-family:Arial,sans-serif; font-size:{int(svg_h*0.029)}px; fill:{stroke};
+  .zlbl {{ font-family:Arial,sans-serif; font-size:{zlbl_fs}px; fill:{stroke};
+            text-anchor:middle; letter-spacing:1px; }}
+  .pwrl {{ font-family:Arial,sans-serif; font-size:{zlbl_fs}px; fill:{stroke};
             text-anchor:middle; }}
   .pol  {{ font-family:Arial,sans-serif; font-size:{int(svg_h*0.033)}px; fill:{stroke};
             dominant-baseline:central; }}
@@ -121,15 +246,14 @@ def generate_svg(zones, title, zone_w, svg_h,
   .cross {{ stroke:{inactive_col}; stroke-width:4; stroke-linecap:round; opacity:0.85; }}
 </style></defs>''')
 
-    # Title
     L.append(f'<text x="{svg_w//2}" y="{int(svg_h*0.048)}" class="title">{title}</text>')
 
-    for i, (t1, t2, t3, t4, zn, active, wattage) in enumerate(zones):
+    for i, (t1, t2, t3, t4, zlabel, active, wattage) in enumerate(zones):
         ox = i * zone_w + 2
         hx = ox + H_CX
         tx = ox + T_CX
+        mid_x = ox + (H_CX + T_CX) // 2
 
-        # Zone separator
         if i > 0:
             L.append(f'<line x1="{ox-2}" y1="0" x2="{ox-2}" y2="{svg_h}" '
                      f'stroke="{stroke}" stroke-width="1.5"/>')
@@ -144,7 +268,6 @@ def generate_svg(zones, title, zone_w, svg_h,
             for d in range(1, dividers + 1):
                 dy = int(HR_TOP + step * d)
                 L.append(f'<line x1="{ox+HR_X+4}" y1="{dy}" x2="{ox+HR_X+HR_W-4}" y2="{dy}"/>')
-
         L.append(f'<line x1="{hx}" y1="{HR_TOP+HR_H}" x2="{hx}" y2="{BOT_Y-CR}"/>')
         L.append(f'<circle cx="{hx}" cy="{BOT_Y}" r="{CR}" class="terminal"/>')
         L.append(f'<text x="{hx}" y="{BOT_Y}" class="num">{t2}</text>')
@@ -165,19 +288,29 @@ def generate_svg(zones, title, zone_w, svg_h,
         L.append(f'<circle cx="{tx}" cy="{BOT_Y}" r="{CR}" class="terminal"/>')
         L.append(f'<text x="{tx}" y="{BOT_Y}" class="num">{t4}</text>')
 
-        mid_x = ox + (H_CX + T_CX) // 2
-
-        # ── Inactive: red X ──
+        # ── Inactive cross ──
         if not active:
             x0 = ox + CROSS_PAD_X
             x1 = ox + zone_w - CROSS_PAD_X
             L.append(f'<line x1="{x0}" y1="{CROSS_TOP}" x2="{x1}" y2="{CROSS_BOT}" class="cross"/>')
             L.append(f'<line x1="{x1}" y1="{CROSS_TOP}" x2="{x0}" y2="{CROSS_BOT}" class="cross"/>')
 
+        # ── Zone label (type name) ──
         if show_zlbl:
-            L.append(f'<text x="{mid_x}" y="{int(svg_h*0.950)}" class="zlbl">ZONE {zn}</text>')
+            # Two-line for long names: split on space if needed
+            words = zlabel.split()
+            if len(words) > 2 and zone_w < 240:
+                mid = len(words) // 2
+                line1 = " ".join(words[:mid])
+                line2 = " ".join(words[mid:])
+                y1 = int(svg_h * 0.942)
+                y2 = int(svg_h * 0.972)
+                L.append(f'<text x="{mid_x}" y="{y1}" class="zlbl">{line1}</text>')
+                L.append(f'<text x="{mid_x}" y="{y2}" class="zlbl">{line2}</text>')
+            else:
+                L.append(f'<text x="{mid_x}" y="{int(svg_h*0.950)}" class="zlbl">{zlabel}</text>')
 
-        # ── Wattage below zone label ──
+        # ── Wattage below label ──
         if active and wattage.strip():
             L.append(f'<text x="{mid_x}" y="{int(svg_h*0.985)}" class="pwrl">{wattage}</text>')
 
@@ -193,7 +326,7 @@ svg_str = generate_svg(
 )
 
 st.markdown("---")
-st.subheader("Preview")
+st.subheader(T["preview"])
 st.components.v1.html(
     f'<div style="overflow-x:auto;background:#e0e0e0;padding:12px;border-radius:8px">'
     f'{svg_str}</div>',
@@ -202,11 +335,11 @@ st.components.v1.html(
 )
 
 st.download_button(
-    label="⬇️  Download SVG",
+    label=T["download"],
     data=svg_str.encode("utf-8"),
     file_name=f"{title_text.replace(' ','_')}_zones.svg",
     mime="image/svg+xml",
     use_container_width=True,
 )
 
-st.caption("Tip: open the downloaded SVG in Inkscape or a browser for further editing.")
+st.caption(T["tip"])
