@@ -175,11 +175,11 @@ def generate_svg(zones, title, zone_w, svg_h,
             L.append(f'<line x1="{x1}" y1="{CROSS_TOP}" x2="{x0}" y2="{CROSS_BOT}" class="cross"/>')
 
         if show_zlbl:
-            L.append(f'<text x="{mid_x}" y="{int(svg_h*0.920)}" class="zlbl">ZONE {zn}</text>')
+            L.append(f'<text x="{mid_x}" y="{int(svg_h*0.950)}" class="zlbl">ZONE {zn}</text>')
 
         # ── Wattage below zone label ──
         if active and wattage.strip():
-            L.append(f'<text x="{mid_x}" y="{int(svg_h*0.965)}" class="pwrl">{wattage}</text>')
+            L.append(f'<text x="{mid_x}" y="{int(svg_h*0.985)}" class="pwrl">{wattage}</text>')
 
     L.append('</svg>')
     return '\n'.join(L)
