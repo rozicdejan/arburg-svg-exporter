@@ -144,8 +144,7 @@ def generate_svg(zones, title, zone_w, svg_h,
             for d in range(1, dividers + 1):
                 dy = int(HR_TOP + step * d)
                 L.append(f'<line x1="{ox+HR_X+4}" y1="{dy}" x2="{ox+HR_X+HR_W-4}" y2="{dy}"/>')
-        if show_pol:
-            L.append(f'<text x="{hx+CR-4}" y="{HR_TOP+HR_H+int(svg_h*0.038)}" class="pol">-</text>')
+
         L.append(f'<line x1="{hx}" y1="{HR_TOP+HR_H}" x2="{hx}" y2="{BOT_Y-CR}"/>')
         L.append(f'<circle cx="{hx}" cy="{BOT_Y}" r="{CR}" class="terminal"/>')
         L.append(f'<text x="{hx}" y="{BOT_Y}" class="num">{t2}</text>')
@@ -168,18 +167,19 @@ def generate_svg(zones, title, zone_w, svg_h,
 
         mid_x = ox + (H_CX + T_CX) // 2
 
-        # ── Active: show wattage  |  Inactive: red X ──
-        if active:
-            if wattage.strip():
-                L.append(f'<text x="{mid_x}" y="{int(svg_h*0.786)}" class="pwrl">{wattage}</text>')
-        else:
+        # ── Inactive: red X ──
+        if not active:
             x0 = ox + CROSS_PAD_X
             x1 = ox + zone_w - CROSS_PAD_X
             L.append(f'<line x1="{x0}" y1="{CROSS_TOP}" x2="{x1}" y2="{CROSS_BOT}" class="cross"/>')
             L.append(f'<line x1="{x1}" y1="{CROSS_TOP}" x2="{x0}" y2="{CROSS_BOT}" class="cross"/>')
 
         if show_zlbl:
-            L.append(f'<text x="{mid_x}" y="{int(svg_h*0.940)}" class="zlbl">ZONE {zn}</text>')
+            L.append(f'<text x="{mid_x}" y="{int(svg_h*0.920)}" class="zlbl">ZONE {zn}</text>')
+
+        # ── Wattage below zone label ──
+        if active and wattage.strip():
+            L.append(f'<text x="{mid_x}" y="{int(svg_h*0.965)}" class="pwrl">{wattage}</text>')
 
     L.append('</svg>')
     return '\n'.join(L)
