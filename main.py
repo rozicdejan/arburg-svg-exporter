@@ -295,8 +295,8 @@ def generate_svg(zones, title, zone_w, svg_h,
             L.append(f'<line x1="{x0}" y1="{CROSS_TOP}" x2="{x1}" y2="{CROSS_BOT}" class="cross"/>')
             L.append(f'<line x1="{x1}" y1="{CROSS_TOP}" x2="{x0}" y2="{CROSS_BOT}" class="cross"/>')
 
-        # ── Zone label (type name) ──
-        if show_zlbl:
+        # ── Zone label (type name) — only when active ──
+        if show_zlbl and active:
             # Two-line for long names: split on space if needed
             words = zlabel.split()
             if len(words) > 2 and zone_w < 240:
