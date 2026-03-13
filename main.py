@@ -26,6 +26,15 @@ LANG = {
         "symbol":           "📐 Nastavitve simbolov",
         "show_pol":         "Prikaži oznake +/−",
         "show_zlbl":        "Prikaži oznake con",
+        "show_wattage":     "Prikaži moči grelcev",
+        "show_date":        "Prikaži datum",
+        "grp_diagram":      "📋 Diagram",
+        "grp_layout":       "📐 Postavitev",
+        "grp_symbols":      "🔣 Simboli",
+        "grp_fonts":        "🔤 Pisave",
+        "grp_colors":       "🎨 Barve",
+        "grp_plate":        "🪛 Ploščica (laser)",
+        "grp_templates":    "💾 Predloge",
         "dividers":         "Notranje črte grelca",
         "style":            "🎨 Slog",
         "stroke_col":       "Barva linij",
@@ -86,6 +95,15 @@ LANG = {
         "symbol":           "📐 Symbol Settings",
         "show_pol":         "Show +/− polarity labels",
         "show_zlbl":        "Show zone labels",
+        "show_wattage":     "Show heater wattage",
+        "show_date":        "Show date",
+        "grp_diagram":      "📋 Diagram",
+        "grp_layout":       "📐 Layout",
+        "grp_symbols":      "🔣 Symbols",
+        "grp_fonts":        "🔤 Fonts",
+        "grp_colors":       "🎨 Colors",
+        "grp_plate":        "🪛 Plate (laser)",
+        "grp_templates":    "💾 Templates",
         "dividers":         "Heater internal dividers",
         "style":            "🎨 Style",
         "stroke_col":       "Line / stroke color",
@@ -239,7 +257,7 @@ def add_text_dxf(msp, text, cx, cy, font_size, color=7):
 #  CORE DIAGRAM BUILDER  (shared geometry, returns element list)
 # ═══════════════════════════════════════════════════════════════════════════════
 def build_elements(zones, title, tool_number, date_str,
-                   zone_w, svg_h, show_pol, show_zlbl, dividers, font_lbl=None):
+                   zone_w, svg_h, show_pol, show_zlbl, dividers, font_lbl=None, show_wattage=True):
     """Returns a list of abstract drawing elements (dicts) shared by SVG & DXF."""
     svg_w = zone_w * len(zones) + 4
 
@@ -344,7 +362,7 @@ def build_elements(zones, title, tool_number, date_str,
         zlbl_y = int(svg_h * 0.955)
         if show_zlbl and active:
             text(zlabel, mid, zlbl_y, FS_LBL, 'middle', 'ZONE_LBL')
-        if active and str(wattage).strip():
+        if active and show_wattage and str(wattage).strip():
             wat_y = zlbl_y + int(FS_LBL * 1.2)
             text(wattage, mid, wat_y, FS_LBL, 'middle', 'WATTAGE')
 
@@ -518,41 +536,48 @@ st.title(T["app_title"])
 st.markdown(T["app_sub"])
 
 with st.sidebar:
-    st.header(T["general"])
-    title_text    = st.text_input(T["diag_title"],   value="ARBURG")
-    tool_number   = st.text_input(T["tool_number"], value="")
-    show_date     = st.checkbox(T["date_label"], value=True)
-    num_zones     = st.slider(T["num_zones"],    1, 12, 6)
-    zone_width    = st.slider(T["zone_width"],   180, 320, 256)
-    svg_height    = st.slider(T["svg_height"],   400, 800, 580)
 
-    st.markdown("---")
-    st.header(T["symbol"])
-    show_polarity   = st.checkbox(T["show_pol"],  value=True)
-    show_zone_lbl   = st.checkbox(T["show_zlbl"], value=True)
-    heater_dividers = st.slider(T["dividers"], 0, 5, 3)
+    # ── Diagram ───────────────────────────────────────────────────────────────
+    with st.expander(T["grp_diagram"], expanded=True):
+        title_text  = st.text_input(T["diag_title"],  value="ARBURG")
+        tool_number = st.text_input(T["tool_number"], value="")
 
-    st.markdown("---")
-    st.header(T["style"])
-    stroke_color   = st.color_picker(T["stroke_col"], value="#444444")
-    bg_color       = st.color_picker(T["bg_col"],     value="#ffffff")
-    inactive_color = st.color_picker(T["inact_col"],  value="#cc0000")
-    font_size_num  = st.slider(T["font_sz"],     14, 36, 24)
-    font_size_lbl  = st.slider(T["font_sz_lbl"], 8, 35, 24)
+    # ── Layout ────────────────────────────────────────────────────────────────
+    with st.expander(T["grp_layout"], expanded=True):
+        num_zones  = st.slider(T["num_zones"],  1, 12, 6)
+        zone_width = st.slider(T["zone_width"], 180, 320, 256)
+        svg_height = st.slider(T["svg_height"], 400, 800, 580)
 
-    # Templates
-    st.markdown("---")
-    st.header(T["templates"])
-    tpl_name = st.text_input(T["tpl_name"], value="")
+    # ── Simboli ───────────────────────────────────────────────────────────────
+    with st.expander(T["grp_symbols"], expanded=True):
+        show_polarity   = st.checkbox(T["show_pol"],      value=True)
+        show_zone_lbl   = st.checkbox(T["show_zlbl"],     value=True)
+        show_wattage    = st.checkbox(T["show_wattage"],  value=True)
+        show_date       = st.checkbox(T["show_date"],     value=True)
+        heater_dividers = st.slider(T["dividers"], 0, 5, 3)
 
-    # Plate scaling
-    st.markdown("---")
-    st.header(T["plate_section"])
-    plate_enable = st.checkbox(T["plate_enable"], value=False)
-    plate_w_mm   = st.number_input(T["plate_w"],  min_value=10.0, max_value=2000.0, value=300.0, step=5.0)
-    plate_h_mm   = st.number_input(T["plate_h"],  min_value=10.0, max_value=2000.0, value=150.0, step=5.0)
-    plate_margin = st.number_input(T["plate_margin"], min_value=0.0, max_value=50.0, value=5.0, step=0.5)
-    plate_border = st.checkbox(T["plate_border"], value=True)
+    # ── Pisave ────────────────────────────────────────────────────────────────
+    with st.expander(T["grp_fonts"], expanded=False):
+        font_size_num = st.slider(T["font_sz"],     14, 36, 24)
+        font_size_lbl = st.slider(T["font_sz_lbl"],  8, 35, 24)
+
+    # ── Barve ─────────────────────────────────────────────────────────────────
+    with st.expander(T["grp_colors"], expanded=False):
+        stroke_color   = st.color_picker(T["stroke_col"], value="#444444")
+        bg_color       = st.color_picker(T["bg_col"],     value="#ffffff")
+        inactive_color = st.color_picker(T["inact_col"],  value="#cc0000")
+
+    # ── Ploščica / laser ──────────────────────────────────────────────────────
+    with st.expander(T["grp_plate"], expanded=False):
+        plate_enable = st.checkbox(T["plate_enable"], value=False)
+        plate_w_mm   = st.number_input(T["plate_w"],      min_value=10.0,  max_value=2000.0, value=300.0, step=5.0)
+        plate_h_mm   = st.number_input(T["plate_h"],      min_value=10.0,  max_value=2000.0, value=150.0, step=5.0)
+        plate_margin = st.number_input(T["plate_margin"], min_value=0.0,   max_value=50.0,   value=5.0,   step=0.5)
+        plate_border = st.checkbox(T["plate_border"], value=False, disabled=not plate_enable)
+
+    # ── Predloge ──────────────────────────────────────────────────────────────
+    with st.expander(T["grp_templates"], expanded=False):
+        tpl_name = st.text_input(T["tpl_name"], value="")
 
 
 # ─── Terminal numbering ───────────────────────────────────────────────────────
@@ -659,7 +684,7 @@ else:
 elements, svg_w = build_elements(
     zone_configs, title_text, tool_number, date_str,
     zone_width, svg_height, show_polarity, show_zone_lbl, heater_dividers,
-    font_lbl=font_size_lbl
+    font_lbl=font_size_lbl, show_wattage=show_wattage
 )
 
 # ─── Plate scale calculation ──────────────────────────────────────────────────
@@ -728,7 +753,7 @@ with col_a:
     )
 
 with col_b:
-    dxf_bytes = render_dxf(elements, svg_w, svg_height, stroke_color,
+    dxf_bytes = render_dxf(elements, svg_w, svg_height, stmroke_color,
                            dxf_scale=dxf_scale, offset_x=offset_x, offset_y=offset_y,
                            plate_w_mm=plate_w_mm,
                            plate_h_mm=plate_h_mm,
