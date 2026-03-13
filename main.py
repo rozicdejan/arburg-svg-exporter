@@ -579,6 +579,68 @@ with st.sidebar:
     with st.expander(T["grp_templates"], expanded=False):
         tpl_name = st.text_input(T["tpl_name"], value="")
 
+    # ── Branding ──────────────────────────────────────────────────────────────
+    st.markdown(
+        """
+        <style>
+        .sb-footer {
+            margin-top: 1.5rem;
+            padding: 0.7rem 0 0.2rem 0;
+            border-top: 1px solid rgba(128,128,128,0.2);
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .sb-footer-title {
+            font-size: 0.70rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--text-color);
+            opacity: 0.75;
+        }
+        .sb-footer-badge {
+            font-family: monospace;
+            font-size: 0.60rem;
+            color: var(--text-color);
+            opacity: 0.45;
+            border: 1px solid currentColor;
+            border-radius: 3px;
+            padding: 0px 4px;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+        .sb-footer-sub {
+            margin-top: 3px;
+            font-size: 0.68rem;
+            color: var(--text-color);
+            opacity: 0.45;
+        }
+        .sb-footer-name {
+            opacity: 1 !important;
+            font-weight: 600;
+            color: var(--text-color);
+            opacity: 0.65;
+        }
+        .sb-footer-copy {
+            margin-top: 1px;
+            font-size: 0.60rem;
+            color: var(--text-color);
+            opacity: 0.28;
+        }
+        </style>
+        <div class="sb-footer">
+            <div>
+                <span class="sb-footer-title">ARBURG Zone Generator</span>
+                <span class="sb-footer-badge">v1.0</span>
+            </div>
+            <div class="sb-footer-sub">
+                Made by <span class="sb-footer-name">Dejan Rožič</span>
+            </div>
+            <div class="sb-footer-copy">© 2026 · All rights reserved</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 
 # ─── Terminal numbering ───────────────────────────────────────────────────────
 st.subheader(T["num_scheme"])
