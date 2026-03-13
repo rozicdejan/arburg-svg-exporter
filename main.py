@@ -32,6 +32,7 @@ LANG = {
         "bg_col":           "Barva ozadja",
         "inact_col":        "Barva križa (neaktivno)",
         "font_sz":          "Velikost pisave terminalov",
+        "font_sz_lbl":      "Velikost pisave oznak con / moči",
         "num_scheme":       "Shema številčenja terminalov",
         "seq_label":        "Zaporedno (1-2, 3-4 … grelec; 13-14 … TC)",
         "custom_label":     "Po meri (ročni vnos)",
@@ -91,6 +92,7 @@ LANG = {
         "bg_col":           "Background color",
         "inact_col":        "Inactive cross color",
         "font_sz":          "Terminal number font size",
+        "font_sz_lbl":      "Zone label / wattage font size",
         "num_scheme":       "Terminal numbering scheme",
         "seq_label":        "Sequential pairs (1-2, 3-4 … heater; 13-14 … TC)",
         "custom_label":     "Custom (enter manually)",
@@ -237,7 +239,7 @@ def add_text_dxf(msp, text, cx, cy, font_size, color=7):
 #  CORE DIAGRAM BUILDER  (shared geometry, returns element list)
 # ═══════════════════════════════════════════════════════════════════════════════
 def build_elements(zones, title, tool_number, date_str,
-                   zone_w, svg_h, show_pol, show_zlbl, dividers):
+                   zone_w, svg_h, show_pol, show_zlbl, dividers, font_lbl=None):
     """Returns a list of abstract drawing elements (dicts) shared by SVG & DXF."""
     svg_w = zone_w * len(zones) + 4
 
@@ -263,7 +265,7 @@ def build_elements(zones, title, tool_number, date_str,
 
     FS_NUM   = int(zone_w * 0.094)
     FS_TITLE = int(svg_h * 0.076)
-    FS_LBL   = int(svg_h * 0.029)
+    FS_LBL   = font_lbl if font_lbl else int(svg_h * 0.029)
     FS_POL   = int(svg_h * 0.033)
     FS_META  = int(svg_h * 0.022)
     JR       = max(5, int(zone_w * 0.027))
@@ -338,11 +340,13 @@ def build_elements(zones, title, tool_number, date_str,
         if not active:
             cross(ox+CPX, CRT, ox+zone_w-CPX, CRB, 'INACTIVE')
 
-        # Labels
+        # Labels — vertical gap scales with font size
+        zlbl_y = int(svg_h * 0.955)
         if show_zlbl and active:
-            text(zlabel, mid, int(svg_h*0.950), FS_LBL, 'middle', 'ZONE_LBL')
+            text(zlabel, mid, zlbl_y, FS_LBL, 'middle', 'ZONE_LBL')
         if active and str(wattage).strip():
-            text(wattage, mid, int(svg_h*0.985), FS_LBL, 'middle', 'WATTAGE')
+            wat_y = zlbl_y + int(FS_LBL * 1.2)
+            text(wattage, mid, wat_y, FS_LBL, 'middle', 'WATTAGE')
 
     return E, svg_w
 
@@ -531,7 +535,8 @@ with st.sidebar:
     stroke_color   = st.color_picker(T["stroke_col"], value="#444444")
     bg_color       = st.color_picker(T["bg_col"],     value="#ffffff")
     inactive_color = st.color_picker(T["inact_col"],  value="#cc0000")
-    font_size_num  = st.slider(T["font_sz"], 14, 36, 24)
+    font_size_num  = st.slider(T["font_sz"],     14, 36, 24)
+    font_size_lbl  = st.slider(T["font_sz_lbl"], 8, 35, 24)
 
     # Templates
     st.markdown("---")
@@ -651,7 +656,8 @@ else:
 # ─── Generate elements (needed for svg_w) ────────────────────────────────────
 elements, svg_w = build_elements(
     zone_configs, title_text, tool_number, date_str,
-    zone_width, svg_height, show_polarity, show_zone_lbl, heater_dividers
+    zone_width, svg_height, show_polarity, show_zone_lbl, heater_dividers,
+    font_lbl=font_size_lbl
 )
 
 # ─── Plate scale calculation ──────────────────────────────────────────────────
@@ -679,16 +685,34 @@ else:
     phys_w_mm  = None
     phys_h_mm  = None
 
-# ─── Render & preview ────────────────────────────────────────────────────────
+# ─── Render export SVG (physical dimensions intact) ──────────────────────────
 svg_str = render_svg(elements, svg_w, svg_height, stroke_color, bg_color, inactive_color,
                      phys_w_mm=phys_w_mm, phys_h_mm=phys_h_mm)
+
+# ─── Render preview SVG (width=100%, fits container, no mm units) ─────────────
+# Add bottom padding to viewBox so large fonts don't get clipped
+preview_pad = int(font_size_lbl * 2.5)
+svg_preview = render_svg(elements, svg_w, svg_height, stroke_color, bg_color, inactive_color,
+                         phys_w_mm=None, phys_h_mm=None)
+import re
+# Expand viewBox height by padding, keep width/height responsive
+svg_preview = re.sub(
+    r'viewBox="0 0 (\d+) (\d+)"',
+    lambda m: f'viewBox="0 0 {m.group(1)} {int(m.group(2)) + preview_pad}"',
+    svg_preview, count=1
+)
+svg_preview = re.sub(
+    r'width="[^"]*"\s*height="[^"]*"',
+    'width="100%" height="auto" style="display:block"',
+    svg_preview, count=1
+)
 
 st.markdown("---")
 st.subheader(T["preview"])
 st.components.v1.html(
-    f'<div style="overflow-x:auto;background:#d8d8d8;padding:12px;border-radius:8px">'
-    f'{svg_str}</div>',
-    height=svg_height + 40,
+    f'<div style="background:#d8d8d8;padding:12px;border-radius:8px;overflow-x:auto">'
+    f'{svg_preview}</div>',
+    height=svg_height + preview_pad + 40,
     scrolling=True
 )
 
@@ -708,9 +732,9 @@ with col_a:
 with col_b:
     dxf_bytes = render_dxf(elements, svg_w, svg_height, stroke_color,
                            dxf_scale=dxf_scale, offset_x=offset_x, offset_y=offset_y,
-                           plate_w_mm=plate_w_mm if plate_enable else None,
-                           plate_h_mm=plate_h_mm if plate_enable else None,
-                           draw_border=plate_border and plate_enable)
+                           plate_w_mm=plate_w_mm,
+                           plate_h_mm=plate_h_mm,
+                           draw_border=plate_border)
     st.download_button(
         label=T["dl_dxf"],
         data=dxf_bytes,
