@@ -753,7 +753,7 @@ with col_a:
     )
 
 with col_b:
-    dxf_bytes = render_dxf(elements, svg_w, svg_height, stmroke_color,
+    dxf_bytes = render_dxf(elements, svg_w, svg_height, stroke_color,
                            dxf_scale=dxf_scale, offset_x=offset_x, offset_y=offset_y,
                            plate_w_mm=plate_w_mm,
                            plate_h_mm=plate_h_mm,
