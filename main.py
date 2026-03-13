@@ -355,14 +355,16 @@ def build_elements(zones, title, tool_number, date_str,
 #  SVG RENDERER
 # ═══════════════════════════════════════════════════════════════════════════════
 def render_svg(elements, svg_w, svg_h, stroke, bg, inactive_col,
-               phys_w_mm=None, phys_h_mm=None):
+               phys_w_mm=None, phys_h_mm=None, vb_h=None):
     """Render elements to SVG string.
+    vb_h: override viewBox height (e.g. to add bottom padding for large fonts).
     If phys_w_mm/phys_h_mm given, sets physical width/height in mm (for laser/engraver)."""
+    vb_height = vb_h if vb_h else svg_h
     w_attr = f"{phys_w_mm:.2f}mm" if phys_w_mm else str(svg_w)
     h_attr = f"{phys_h_mm:.2f}mm" if phys_h_mm else str(svg_h)
     L = []
     L.append(f'<svg xmlns="http://www.w3.org/2000/svg" '
-             f'viewBox="0 0 {svg_w} {svg_h}" width="{w_attr}" height="{h_attr}" '
+             f'viewBox="0 0 {svg_w} {vb_height}" width="{w_attr}" height="{h_attr}" '
              f'style="background:{bg}">')
     L.append(f'<defs><style>'
              f'line,polyline{{stroke:{stroke};fill:none;stroke-width:1.8;}}'
@@ -685,22 +687,18 @@ else:
     phys_w_mm  = None
     phys_h_mm  = None
 
-# ─── Render export SVG (physical dimensions intact) ──────────────────────────
-svg_str = render_svg(elements, svg_w, svg_height, stroke_color, bg_color, inactive_color,
-                     phys_w_mm=phys_w_mm, phys_h_mm=phys_h_mm)
+# Bottom padding so large fonts never get clipped (both export and preview)
+export_pad = int(font_size_lbl * 2.5)
+vb_h_padded = svg_height + export_pad
 
-# ─── Render preview SVG (width=100%, fits container, no mm units) ─────────────
-# Add bottom padding to viewBox so large fonts don't get clipped
-preview_pad = int(font_size_lbl * 2.5)
-svg_preview = render_svg(elements, svg_w, svg_height, stroke_color, bg_color, inactive_color,
-                         phys_w_mm=None, phys_h_mm=None)
+# ─── Render export SVG (physical dimensions intact, viewBox padded) ───────────
+svg_str = render_svg(elements, svg_w, svg_height, stroke_color, bg_color, inactive_color,
+                     phys_w_mm=phys_w_mm, phys_h_mm=phys_h_mm, vb_h=vb_h_padded)
+
+# ─── Render preview SVG (width=100%, same padded viewBox) ────────────────────
 import re
-# Expand viewBox height by padding, keep width/height responsive
-svg_preview = re.sub(
-    r'viewBox="0 0 (\d+) (\d+)"',
-    lambda m: f'viewBox="0 0 {m.group(1)} {int(m.group(2)) + preview_pad}"',
-    svg_preview, count=1
-)
+svg_preview = render_svg(elements, svg_w, svg_height, stroke_color, bg_color, inactive_color,
+                         phys_w_mm=None, phys_h_mm=None, vb_h=vb_h_padded)
 svg_preview = re.sub(
     r'width="[^"]*"\s*height="[^"]*"',
     'width="100%" height="auto" style="display:block"',
@@ -712,7 +710,7 @@ st.subheader(T["preview"])
 st.components.v1.html(
     f'<div style="background:#d8d8d8;padding:12px;border-radius:8px;overflow-x:auto">'
     f'{svg_preview}</div>',
-    height=svg_height + preview_pad + 40,
+    height=svg_height + export_pad + 40,
     scrolling=True
 )
 
