@@ -306,8 +306,8 @@ def build_elements(
     HR_W   = int(zone_w * 0.226)
     HR_X   = H_CX - HR_W // 2
 
-    CT  = int(svg_h * 0.396)
-    CB  = int(svg_h * 0.672)
+    CT  = int(svg_h * 0.380)
+    CB  = int(svg_h * 0.560)
     JY  = (CT + CB) // 2
     TDX = int(zone_w * 0.109)
 
