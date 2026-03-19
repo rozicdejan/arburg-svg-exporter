@@ -594,7 +594,7 @@ with st.sidebar:
     with st.expander(T["grp_fonts"], expanded=False):
         font_size_num  = st.slider(T["font_sz"], 14, 36, 24)
         font_size_lbl  = st.slider(T["font_sz_lbl"], 8, 35, 24)
-        font_size_meta = st.slider(T["font_sz_meta"], 6, 30, 12)
+        font_size_meta = st.slider(T["font_sz_meta"], 6, 30, 20)
 
     with st.expander(T["grp_colors"], expanded=False):
         stroke_color   = st.color_picker(T["stroke_col"], value="#444444")
