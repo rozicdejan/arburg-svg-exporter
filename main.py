@@ -308,11 +308,16 @@ def build_elements(zones, title, tool_number, date_str,
     # Title
     text(title, svg_w//2, int(svg_h*0.048), FS_TITLE, 'middle', 'TITLE')
 
-    # Tool number bottom-left
+  
+    # Tool number + date at top
+    meta_y = int(svg_h * 0.020) + FS_META
+
     if tool_number:
-        text(f"Orodje: {tool_number}", 8, int(svg_h*0.985), FS_META, 'start', 'META')
+        label_tool = f"Orodje: {tool_number}" if lang_choice == "SL" else f"Tool: {tool_number}"
+        text(label_tool, 8, meta_y, FS_META, 'start', 'META')
+
     if date_str:
-        text(date_str, svg_w - 8, int(svg_h*0.985), FS_META, 'end', 'META')
+        text(date_str, svg_w - 8, meta_y, FS_META, 'end', 'META')
 
     for i, (t1, t2, t3, t4, zlabel, tc_type, active, wattage) in enumerate(zones):
         ox  = i * zone_w + 2
