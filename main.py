@@ -298,7 +298,7 @@ def build_elements(
     H_CX  = zone_w * 30 // 100
     T_CX  = zone_w * 70 // 100
     TOP_Y = int(svg_h * 0.145)
-    BOT_Y = int(svg_h * 0.852)
+    BOT_Y = int(svg_h * 0.810)
     CR    = int(zone_w * 0.125)
 
     HR_TOP = int(svg_h * 0.232)
@@ -316,7 +316,7 @@ def build_elements(
     CRB = int(svg_h * 0.90)
 
     FS_NUM   = font_num if font_num else int(zone_w * 0.094)
-    FS_TITLE = int(svg_h * 0.060)
+    FS_TITLE = int(svg_h * 0.076)
     FS_LBL   = font_lbl if font_lbl else int(svg_h * 0.029)
     FS_POL   = int(svg_h * 0.033)
     FS_META  = font_meta if font_meta else int(svg_h * 0.022)
@@ -339,8 +339,8 @@ def build_elements(
     def cross(x0, y0, x1, y1, layer='INACTIVE'):
         E.append({'t': 'cross', 'x0': x0, 'y0': y0, 'x1': x1, 'y1': y1, 'layer': layer})
 
-    # Title - ARBURG
-    text(title, svg_w // 2, int(svg_h * 0.060), FS_TITLE, 'middle', 'TITLE')
+    # Title
+    text(title, svg_w // 2, int(svg_h * 0.055), FS_TITLE, 'middle', 'TITLE')
 
     # Tool number + date at top
     meta_y = int(svg_h * 0.020) + FS_META
@@ -594,7 +594,7 @@ with st.sidebar:
     with st.expander(T["grp_fonts"], expanded=False):
         font_size_num  = st.slider(T["font_sz"], 14, 36, 24)
         font_size_lbl  = st.slider(T["font_sz_lbl"], 8, 35, 24)
-        font_size_meta = st.slider(T["font_sz_meta"], 6, 30, 20)
+        font_size_meta = st.slider(T["font_sz_meta"], 6, 30, 12)
 
     with st.expander(T["grp_colors"], expanded=False):
         stroke_color   = st.color_picker(T["stroke_col"], value="#444444")
